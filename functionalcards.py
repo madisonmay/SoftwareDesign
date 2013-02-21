@@ -1,119 +1,107 @@
 import random
 
 
-class Card():
-
-    def __init__(self, suit=None, rank=None):
-        self.suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
-        self.ranks = ['', '', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-             'Jack', 'Queen', 'King', 'Ace']
-
-        self.suit = suit
-        self.rank = rank
-
-    def printCard(self):
-        print(self.ranks[self.rank] + ' of ' + self.suits[self.suit])
-
-    def __str__(self):
-        return(self.ranks[self.rank] + ' of ' + self.suits[self.suit])
-
-    def __lt__(self, other):
-        """For card comparison"""
-        return self.rank < other.rank
+suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
+ranks = ['', '', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+     'Jack', 'Queen', 'King', 'Ace']
 
 
-class Deck():
+"""Card Functions"""
+def card(i, j):
+    return {'rank': i, 'suit': j}
 
-    def __init__(self):
-        self.cards = [Card(i, j) for i in range(4) for j in range(2, 15)]
+def printCard(card):
+    print(ranks[card['rank']] + ' of ' + suits[card['suit']])
 
-    def printDeck(self):
-        for i in range(len(self.cards)):
-            print(str(i + 1) + ") " + str(self.cards[i]))
-
-    def shuffle(self):
-        random.shuffle(self.cards)
-
-    def sort(self):
-        self.cards = sorted(self.cards)
-
-    def pop(self, index=0):
-        return self.cards.pop(index)
-
-    def remove(self, index=0):
-        self.cards.pop(index)
-
-    def pop_n(self, n, start=0):
-        res = []
-        for i in range(n):
-            res.append(self.cards.pop(start + n))
-        return res
-
-    def add(self, card):
-        self.cards.append(card)
-
-    def move(self, target, index=0):
-        target.add(self.pop(index))
-
-    def move_n(self, target, n, start=0):
-        cards = self.pop_n(n, start)
-        for i in range(n):
-            target.add(cards[i])
-
-    def contains(self, rank):
-        for i in range(len(self.cards)):
-            if rank == self.cards[i].rank:
-                return True
-        return False
-
-    def indexOf(self, rank):
-        for i in range(len(self.cards)):
-            if self.ranks[self.cards[i].rank] == rank:
-                return i
-
-    def rank_count(self, rank):
-        count = 0
-        for card in self.cards:
-            if card.rank == rank:
-                count += 1
-        return count
-
-    def remove_pair(self, rank):
-        for i in range(2):
-            for j in range(len(self.cards)):
-                if self.cards[j].rank == rank:
-                    self.remove(j)
-                    break
-
-    def remove_pairs(self):
-        for card in self.cards:
-            if self.rank_count(card.rank) > 1:
-                self.remove_pair(card.rank)
+def lt(c1, c2):
+    """For card comparison"""
+    return c1['rank'] < c2['rank']
 
 
-class Hand(Deck):
+"""Deck functions"""
+def deck():
+    return[card(i, j) for i in range(4) for j in range(2, 15)]
 
-    def __init__(self):
-        self.suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
-        self.ranks = ['', '', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-                  'Jack', 'Queen', 'King', 'Ace']
-        self.cards = []
+def printDeck(deck):
+    for i in range(len(deck)):
+        print(str(i + 1) + ") " + str(deck[i]))
+
+def shuffle(deck):
+    random.shuffle(deck)
+
+def sort(deck):
+    deck.sort()
+
+def pop(deck, index=0):
+    return deck.pop(index)
+
+def remove(deck, index=0):
+    deck.pop(index)
+
+def pop_n(deck, n, start=0):
+    res = []
+    for i in range(n):
+        res.append(pop(deck, start + n))
+    return res
+
+def add(deck, card):
+    deck.append(card)
+
+def move(deck, target, index=0):
+    add(deck, pop(deck, index))
+
+def move_n(deck, target, n, start=0):
+    cards = pop_n(deck, n, start)
+    for i in range(n):
+        add(target, cards[i])
+
+def contains(deck, rank):
+    for i in range(len(deck)):
+        if rank == deck[i][rank]:
+            return True
+    return False
+
+def indexOf(deck, rank):
+    for i in range(len(deck)):
+        if ranks[deck[i][rank]] == rank:
+            return i
+
+def rank_count(deck, rank):
+    count = 0
+    for card in deck:
+        if card[rank] == rank:
+            count += 1
+    return count
+
+def remove_pair(deck, rank):
+    for i in range(2):
+        for j in range(len(deck)):
+            if deck[j][rank] == rank:
+                remove(deck, j)
+                break
+
+def remove_pairs(deck):
+    for card in deck:
+        if rank_count(deck, card[rank]) > 1:
+            remove_pair(deck, card[rank])
 
 
-class Player():
-
-    def __init__(self, name):
-        self.hand = Hand()
-        self.name = name
-        self.score = 0
-
-    def has(self, rank):
-        return self.hand.contains(rank)
-
-    def __str__(self):
-        return self.name
+'''Hand constructor'''
+def hand():
+    return []
 
 
+'''Player functions'''
+def player(name):
+    return {'hand': Hand(), 'name': name, 'score': 0}
+
+def has(player, rank):
+    return contains(player['hand'], rank)
+
+def printPlayer(player):
+    print(player['name'])
+
+'''Game functions - Resume conversion to function implementation here'''
 class GoFish():
 
     def __init__(self, players):
