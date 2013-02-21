@@ -27,6 +27,9 @@ class Deck():
     def __init__(self):
         self.cards = [Card(i, j) for i in range(4) for j in range(2, 15)]
 
+    def empty(self):
+        return not self.cards
+
     def printDeck(self):
         for i in range(len(self.cards)):
             print(str(i + 1) + ") " + str(self.cards[i]))
@@ -72,6 +75,7 @@ class Deck():
                 return i
 
     def rank_count(self, rank):
+        '''Checks through a deck for appearances of a certain rank'''
         count = 0
         for card in self.cards:
             if card.rank == rank:
@@ -89,7 +93,6 @@ class Deck():
         for card in self.cards:
             if self.rank_count(card.rank) > 1:
                 self.remove_pair(card.rank)
-
 
 class Hand(Deck):
 
@@ -131,7 +134,15 @@ class GoFish():
             player.hand.sort()
             player.hand.remove_pairs()
             if len(player.hand.cards) < 5:
-                player.score += (5 - len(player.hand.cards)) / 2
+                player.score += (5 - len(player.hand.cards)) // 2
+
+    def ended(self):
+        for person in self.players:
+            if len(person.hand.cards) == 0:
+                return True
+        if self.deck.empty():
+            return True
+        return False
 
     def ask(self, player):
 
@@ -146,19 +157,19 @@ class GoFish():
             try:
                 k = int(input("%s, which player do you want to ask? "
                             % (player.name))) - 1
+                assert k >= 0
                 return k
 
             except:
-                print("Please enter a valid index")
-                return user_query()
+                return -1
 
         k = user_query()
 
-        if k >= len(self.players):
+        if k == -1 or k >= len(self.players):
             print("\nPlease enter a number in the correct range!\n")
             return self.ask(player)
 
-        if self.players[k] == player:
+        elif self.players[k] == player:
             print("\nYou can't pick yourself!\n")
             return self.ask(player)
 
@@ -169,12 +180,13 @@ class GoFish():
 
         def rank_query():
 
-            rank = int(input("What card do you want to ask %s for? "
-                            % (self.players[k].name)))
             try:
+                rank = int(input("What card do you want to ask %s for? "
+                            % (self.players[k].name)))
+                assert rank >= 2
                 return self.players[k].has(rank), self.players[k], self.ranks[rank]
             except:
-                print("Please enter a valid index")
+                print("\nPlease enter a valid index.\n")
                 return rank_query()
 
 
@@ -182,39 +194,33 @@ class GoFish():
 
     def turn(self, player):
 
-        for person in self.players:
-            if len(person.hand.cards) == 0:
-                return self.endgame()
-
-        if (len(self.deck.cards) == 0):
-            return self.endgame()
+        if game.ended():
+            self.endgame()
 
         input("Press enter to begin your turn, %s... " % (player.name))
         print('\nYour hand:')
-        for person in self.players:
-            print(person.name)
-            person.hand.printDeck()
+        player.hand.printDeck()
         print('\n')
         #Check to see if player guesses correctly
         correct, next_player, rank = self.ask(player)
 
         #If they did, they go again
         if correct:
-            print("\n%s had a %s!\n " % (str(next_player), rank))
+            print("\n"*75 + "\n%s had a %s!\n " % (str(next_player), rank))
             player.score += 1
             print("%s's current score: %s\n" % (player.name, player.score))
             next_player.hand.move(player.hand, next_player.hand.indexOf(rank))
             player.hand.remove_pairs()
             if len(player.hand.cards) != 0:
-                return self.turn(player)
+                self.turn(player)
             else:
-                return self.endgame()
+                self.endgame()
 
         #Otherwise, the player they asked gets to go
         else:
-            print("\n%s didn't have that card. Go fish!\n" % (str(next_player)))
+            print("\n"*75 + "\n%s didn't have that card. Go fish!\n" % (str(next_player)))
             game.deck.move(player.hand)
-            return self.turn(next_player)
+            self.turn(next_player)
 
     def endgame(self):
         scores = []
