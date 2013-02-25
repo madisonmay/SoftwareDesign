@@ -46,6 +46,12 @@ class Board():
         """Fill a position on the board"""
         self.board[2 - (position - 1) // 3][(position - 1) % 3] = symbol
 
+    def filled(self, position, symbol):
+        """Return new board with position filled"""
+        board = Board(deepcopy(self.board))
+        board.board[2 - (position - 1) // 3][(position - 1) % 3] = symbol
+        return board
+
     def position(self, position):
         return self.board[2 - (position - 1) // 3][(position - 1) % 3]
 
@@ -219,6 +225,41 @@ class Board():
         """Checks for any win conditions"""
         return self.tie() or self.win()
 
+    def out(self):
+        d = {}
+        for i in range(3):
+            for j in range(3):
+                if self.board[i][j] != ' ':
+                    d[self.board[i][j]] = i*3 + j + 1
+        return d
+
+    def data_in(self, board):
+        self.board = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
+        for k in board.keys():
+            for v in board[k]:
+                self.board[(k-1)//3][k%3] = v
+
+    def ai_move(self, player):
+        """AI Move Method"""
+        first_move = self.first_move(player.symbol)
+        win = self.can_win(player.symbol)
+        lose = self.can_lose(player.symbol)
+        fork = self.fork(player.symbol)
+        block_fork = self.block_fork(player.symbol)
+        center = self.center(player.symbol)
+        opposite_corner = self.opposite_corner(player.symbol)
+        corner = self.corner(player.symbol)
+        if first_move: return first_move
+        elif win: return win
+        elif lose: return lose
+        elif fork: return fork
+        elif block_fork: return block_fork
+        elif center: return center
+        elif opposite_corner: return opposite_corner
+        elif corner: return corner
+        else:
+            position = random.choice(self.open_positions())
+            return self.filled(position, player.symbol)
 
 class Player():
     """Player class"""
@@ -267,12 +308,16 @@ class TicTacToe():
         return self.board.game_over()
 
     def move(self, player):
-        """Handles moves for standard player type and for monkey."""
+        """Handles moves for all player types"""
+
+        """Player Type Monkey"""
         if player.monkey:
             position = random.choice(self.open_positions())
             self.board.fill(position, player.symbol)
+
         elif player.ai:
-            self.move_ai(player)
+            self.board = self.board.ai_move(player)
+
         else:
 
             try:
@@ -290,34 +335,6 @@ class TicTacToe():
                 print("Please enter a number between 1 and 9")
                 self.move(player)
 
-    def move_ai(self, player):
-        first_move = self.board.first_move(player.symbol)
-        win = self.board.can_win(player.symbol)
-        lose = self.board.can_lose(player.symbol)
-        fork = self.board.fork(player.symbol)
-        block_fork = self.board.block_fork(player.symbol)
-        center = self.board.center(player.symbol)
-        opposite_corner = self.board.opposite_corner(player.symbol)
-        corner = self.board.corner(player.symbol)
-        if first_move:
-            self.board = first_move
-        elif win:
-            self.board = win
-        elif lose:
-            self.board = lose
-        elif fork:
-            self.board = fork
-        elif block_fork:
-            self.board = block_fork
-        elif center:
-            self.board = center
-        elif opposite_corner:
-            self.board = opposite_corner
-        elif corner:
-            self.board = corner
-        else:
-            position = random.choice(self.open_positions())
-            self.board.fill(position, player.symbol)
 
     def open_positions(self):
         return self.board.open_positions()
@@ -354,7 +371,17 @@ class TicTacToe():
             except:
                 pass
 
+
+def play(board_in, you):
+    new_board = Board()
+    data = new_board.data_in(board_in)
+    new_board.board = data
+    player = Player('Madison', you, ai=True)
+    new_board.board = new_board.ai_move(player)
+    return new_board.out()
+
 if __name__ == '__main__':
+    # Code for testing AI
     ties = 0
     wins = 0
     for i in range(1000):
@@ -364,4 +391,3 @@ if __name__ == '__main__':
     print("Wins: " + str(wins) + "/" + str(i+1))
     print("Ties: " + str(ties) + "/" + str(i+1))
     print("Losses: " + str(i+1-wins-ties) + "/" + str(i+1))
-
