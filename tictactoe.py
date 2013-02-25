@@ -17,8 +17,11 @@ class Board():
       1  |  2  |  3
          |     |
     """
-    def __init__(self, board = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]):
-        self.board = board
+    def __init__(self, board=False):
+        if board:
+            self.board = board
+        else:
+            self.board =  [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
 
     def printBoard(self):
         empty_row = " "*5+"|" + " "*5 + "|" + " "*5
@@ -268,7 +271,6 @@ class TicTacToe():
         if player.monkey:
             position = random.choice(self.open_positions())
             self.board.fill(position, player.symbol)
-            self.printBoard()
         elif player.ai:
             self.move_ai(player)
         else:
@@ -298,34 +300,24 @@ class TicTacToe():
         opposite_corner = self.board.opposite_corner(player.symbol)
         corner = self.board.corner(player.symbol)
         if first_move:
-            print("First move")
             self.board = first_move
         elif win:
-            print("Win")
             self.board = win
         elif lose:
-            print("Block loss")
             self.board = lose
         elif fork:
-            print("Fork")
             self.board = fork
         elif block_fork:
-            print("Prevent Fork")
             self.board = block_fork
         elif center:
-            print("Center")
             self.board = center
         elif opposite_corner:
-            print("Opposite corner")
             self.board = opposite_corner
         elif corner:
-            print("Corner")
             self.board = corner
         else:
-            print("Side - center")
             position = random.choice(self.open_positions())
             self.board.fill(position, player.symbol)
-        self.printBoard()
 
     def open_positions(self):
         return self.board.open_positions()
@@ -337,7 +329,6 @@ class TicTacToe():
         """Main game loop"""
         player_num = random.randint(0, 1)
         while not self.game_over():
-            self.printBoard()
             player = self.players[player_num]
             self.move(player)
             player_num = 1 - player_num
@@ -349,12 +340,28 @@ class TicTacToe():
         self.printBoard()
         if not self.board.tie():
             print('%s wins!' % (self.players[player_num].name))
+            if self.players[player_num].name == "AI":
+                try:
+                    global wins
+                    wins += 1
+                except:
+                    pass
         else:
-            print("It's a tie!")
-        self.players = []
-        self.board = []
+            try:
+                print("It's a tie!")
+                global ties
+                ties += 1
+            except:
+                pass
 
 if __name__ == '__main__':
-    game = TicTacToe(['Madison', 'AI'])
-    game.start()
+    ties = 0
+    wins = 0
+    for i in range(1000):
+        game = TicTacToe(['Monkey', 'AI'])
+        game.start()
+    os.system('clear')
+    print("Wins: " + str(wins) + "/" + str(i+1))
+    print("Ties: " + str(ties) + "/" + str(i+1))
+    print("Losses: " + str(i+1-wins-ties) + "/" + str(i+1))
 
