@@ -3,6 +3,11 @@ import os
 from copy import deepcopy
 import itertools
 
+
+"""Note that this implementation of tic-tac-toe takes a performance hit because of deepcopy,
+and should probably be optimized to only use inplace methods as opposed to return copies of objects.
+However, for normal gameplay, this isn't a concern."""
+
 class Board():
     """
     Board representation: arranged to map to numpad
@@ -24,6 +29,7 @@ class Board():
             self.board =  [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
 
     def printBoard(self):
+        """Composes board and prints"""
         empty_row = " "*5+"|" + " "*5 + "|" + " "*5
         bottom_row = "_"*5+"|" + "_"*5 + "|" + "_"*5
         board = self.board
@@ -53,9 +59,11 @@ class Board():
         return board
 
     def position(self, position):
+        """Converts from input to board position"""
         return self.board[2 - (position - 1) // 3][(position - 1) % 3]
 
     def open_positions(self):
+        """Returns a list of open positions"""
         res = []
         for i in range(3):
             for j in range(3):
@@ -69,6 +77,7 @@ class Board():
 
 
     def rows(self):
+        """Return rows, columns, and diagonals in row format"""
         rows = []
         for row in self.board:
             rows.append(row)
@@ -96,6 +105,7 @@ class Board():
         return False
 
     def successors(self, symbol):
+        """Generates a list of successors to a state"""
         l = []
         for i in range(3):
             for j in range(3):
@@ -114,6 +124,7 @@ class Board():
         return count
 
     def first_move(self, player_symbol):
+        """Play in the corner if possible"""
         empty = True
         for row in self.board:
             for element in row:
@@ -193,6 +204,7 @@ class Board():
         return False
 
     def opposite_corner(self, player_symbol):
+        """If a corner is open opposite the other players piece, play there."""
         symbols = ['O', 'X']
         for s in symbols:
             if s != player_symbol:
@@ -208,6 +220,7 @@ class Board():
         return False
 
     def corner(self, player_symbol):
+        """Play in a corner if open"""
         symbols = ['O', 'X']
         for s in symbols:
             if s != player_symbol:
@@ -222,10 +235,11 @@ class Board():
         return False
 
     def game_over(self):
-        """Checks for any win conditions"""
+        """Checks for any fulfilled end_game conditions"""
         return self.tie() or self.win()
 
     def out(self):
+        """Conversion for playing other ai"""
         d = {}
         for i in range(3):
             for j in range(3):
@@ -234,6 +248,7 @@ class Board():
         return d
 
     def data_in(self, board):
+        """Conversion for playing other ai"""
         self.board = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
         for k in board.keys():
             for v in board[k]:
@@ -287,24 +302,8 @@ class TicTacToe():
                 player_list.append(Player(players[i], symbols[i]))
         self.players = player_list
 
-    # def gen_tree(self):
-    #     """Generate a state tree"""
-    #     frontier = [self.board]
-    #     symbols = ['O', 'X']
-    #     d = {}
-    #     symbol_num = 1
-    #     while frontier:
-    #         symbol_num = 1 - symbol_num
-    #         state = frontier.pop(0)
-    #         for s in state.successors(symbols[symbol_num]):
-    #             frontier.append(s)
-    #             try:
-    #                 d[state].append(s)
-    #             except:
-    #                 d[state]=[s]
-    #     return d
-
     def game_over(self):
+        """Ends the game"""
         return self.board.game_over()
 
     def move(self, player):
@@ -337,9 +336,11 @@ class TicTacToe():
 
 
     def open_positions(self):
+        """Returns a list of open positions in the game"""
         return self.board.open_positions()
 
     def printBoard(self):
+        """Prints the game board"""
         self.board.printBoard()
 
     def start(self):
@@ -373,6 +374,7 @@ class TicTacToe():
 
 
 def play(board_in, you):
+    """Play method for competing against other ai's"""
     new_board = Board()
     data = new_board.data_in(board_in)
     new_board.board = data
@@ -381,11 +383,11 @@ def play(board_in, you):
     return new_board.out()
 
 if __name__ == '__main__':
-    # Code for testing AI
+    """Code for testing AI"""
     ties = 0
     wins = 0
     for i in range(1000):
-        game = TicTacToe(['Monkey', 'AI'])
+        game = TicTacToe(['AI', 'AI'])
         game.start()
     os.system('clear')
     print("Wins: " + str(wins) + "/" + str(i+1))
