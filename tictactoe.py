@@ -6,7 +6,9 @@ import itertools
 
 """Note that this implementation of tic-tac-toe takes a performance hit because of deepcopy,
 and should probably be optimized to only use inplace methods as opposed to return copies of objects.
-However, for normal gameplay, this isn't a concern."""
+For normal gameplay, this isn't a concern.
+
+Also, code may be unnecessarily complex because of my choice to try OOP for this problem"""
 
 class Board():
     """
@@ -182,6 +184,8 @@ class Board():
         opponent_moves = self.successors(opponent_symbol)
         moves = self.successors(player_symbol)
 
+
+        #force an opponent to block
         for i in range(len(opponent_moves)):
             if opponent_moves[i].win_count(opponent_symbol) >= 2:
                 for i in range(len(moves)):
@@ -190,6 +194,7 @@ class Board():
                         if block_attempt.win_count(opponent_symbol) <= 1:
                             return moves[i]
 
+        #play where they would move to create a fork
         for i in range(len(opponent_moves)):
             if opponent_moves[i].win_count(opponent_symbol) >= 2:
                 return moves[i]
@@ -240,11 +245,11 @@ class Board():
 
     def out(self):
         """Conversion for playing other ai"""
-        d = {}
+        d = {'x': [], 'o': []}
         for i in range(3):
             for j in range(3):
                 if self.board[i][j] != ' ':
-                    d[self.board[i][j]] = i*3 + j + 1
+                    d[self.board[i][j].lower()].append(i*3 + j + 1)
         return d
 
     def data_in(self, board):
@@ -252,7 +257,8 @@ class Board():
         self.board = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
         for k in board.keys():
             for v in board[k]:
-                self.board[(k-1)//3][k%3] = v
+                self.board[(v-1)//3][(v-1)%3] = k.upper()
+        self.printBoard()
 
     def ai_move(self, player):
         """AI Move Method"""
@@ -280,7 +286,7 @@ class Player():
     """Player class"""
     def __init__(self, name, symbol, monkey=False, ai=False):
         self.name = name
-        self.symbol = symbol
+        self.symbol = symbol.upper()
         self.monkey = monkey
         self.ai = ai
 
@@ -333,6 +339,7 @@ class TicTacToe():
                 self.printBoard()
                 print("Please enter a number between 1 and 9")
                 self.move(player)
+        self.printBoard()
 
 
     def open_positions(self):
@@ -376,20 +383,29 @@ class TicTacToe():
 def play(board_in, you):
     """Play method for competing against other ai's"""
     new_board = Board()
-    data = new_board.data_in(board_in)
-    new_board.board = data
+    new_board.data_in(board_in)
+    new_board.printBoard();
     player = Player('Madison', you, ai=True)
-    new_board.board = new_board.ai_move(player)
+    print(new_board.board)
+    print('Before')
+    new_board = new_board.ai_move(player)
+    print(new_board.board)
+    print('After')
     return new_board.out()
 
 if __name__ == '__main__':
-    """Code for testing AI"""
-    ties = 0
-    wins = 0
-    for i in range(1000):
-        game = TicTacToe(['AI', 'AI'])
-        game.start()
-    os.system('clear')
-    print("Wins: " + str(wins) + "/" + str(i+1))
-    print("Ties: " + str(ties) + "/" + str(i+1))
-    print("Losses: " + str(i+1-wins-ties) + "/" + str(i+1))
+    game = TicTacToe(['AI', 'Madison'])
+    game.start()
+    # """Code for testing AI"""
+    # ties = 0
+    # wins = 0
+    # for i in range(100):
+    #     """Specifying 'Monkey' will yield a random player, 'AI' will yield a computer player,
+    #     and any other string will create a human player"""
+    #     game = TicTacToe(['AI', 'Monkey'])
+    #     game.start()
+    # os.system('clear')
+    # print("Wins: " + str(wins) + "/" + str(i+1))
+    # print("Ties: " + str(ties) + "/" + str(i+1))
+    # print("Losses: " + str(i+1-wins-ties) + "/" + str(i+1))
+

@@ -1,6 +1,0 @@
------a-----
-----bcd----
----efghi---
---jklmnop--
--qrstuvwxy-
-zabcdefghij
